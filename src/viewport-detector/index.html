@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>viewport-detector</title>
+        <meta charset="utf-8">
+        <script type="module" src="./script.js"></script>
+    </head>
+    <body>
+        <viewport-detector>
+            <viewport-watch code="custom"	media="only screen and (min-width : 320px)"></viewport-watch>
+            <viewport-watch code="mobile"	media="only screen and (min-width : 480px)"></viewport-watch>
+            <viewport-watch code="tablet"	media="only screen and (min-width : 768px)"></viewport-watch>
+            <viewport-watch code="desktop"	media="only screen and (min-width : 992px)"></viewport-watch>
+            <viewport-watch code="wide"		media="only screen and (min-width : 1200px)"></viewport-watch>
+        </viewport-detector>
+
+        <div>Resize the window to see the output</div>
+        <h1 id="output"></h1>
+
+    </body>
+</html>

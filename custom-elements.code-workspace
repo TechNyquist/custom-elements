@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Listen for Xdebug",
+				"type": "php",
+				"request": "launch",
+				"port": 9003
+			},
+			{
+				"name": "Launch browser",
+				"type": "firefox",
+				"request": "launch",
+				"reAttach": true,
+				"url": "http://localhost/custom-elements/src/list.php",
+				"webRoot": "${workspaceFolder}/..",
+				"pathMappings": [
+					{
+						"url": "http://localhost/",
+						"path": "${webRoot}/"
+					}
+				]
+			}
+		]
+	}
+}
