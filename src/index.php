@@ -1,4 +1,9 @@
 <?php
+
+    /**
+     * This script automates minification of all custom-elements.
+     */
+
     if(!isset($_POST['minify']))
     {
         echo 'Click <form method="POST" style="display: inline"><button type="submit" name="minify">here</button></form> to build all.';
@@ -36,7 +41,8 @@
     if( is_dir($dist) )
     {
         deleteDirectory($dist);
-        rmdir($dist);
+        if( is_dir($dist) )
+            rmdir($dist);
     }
     mkdir($dist);
 
@@ -70,9 +76,14 @@
             }
             elseif( is_file($lpath) )
             {
+                // ignore everything called "index", it's intended only for demo
+                if( str_starts_with(basename($lpath), 'index.'))
+                    continue;
+
                 $ext = pathinfo($lpath, PATHINFO_EXTENSION);
                 $filename = basename($lpath, ".{$ext}");
                 $dpath = $dist_path . "/{$filename}.min.{$ext}";
+
                 if( $ext == 'js' )
                 {
                     ++$found;
