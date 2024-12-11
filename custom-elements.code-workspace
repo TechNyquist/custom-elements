@@ -13,7 +13,7 @@
 				"type": "firefox",
 				"request": "launch",
 				"reAttach": true,
-				"url": "http://localhost/custom-elements/src/to-top/index.html",
+				"url": "http://localhost/custom-elements/src/news-roller/index.html",
 				"webRoot": "${workspaceFolder}/..",
 				"pathMappings": [
 					{

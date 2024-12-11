@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <title>news-roller CE</title>
+        <meta charset="utf-8">
+        <script src="./news-roller.js" type="module"></script>
+    </head>
+    <body>
+        <style>
+            news-roller
+            {
+                width: 600px;
+                height: 400px;
+                border: 2px solid green;
+            }
+        </style>
+
+        <h1>News Roller</h1>
+        <h3>An easy-to-use cinema-like carousel of news with big media and side tabs.</h3>
+        <news-roller id="news1">
+            <news-roller-entry>
+                <div slot="label">Titolo 1</div>
+                <img src="../../resources/pic1.jpg" alt="Pic 1" />
+            </news-roller-entry>
+            <news-roller-entry>
+                <div slot="label">Titolo 2</div>
+                <img src="../../resources/pic2.jpg" alt="Pic 2" />
+            </news-roller-entry>
+            <!-- <news-roller-entry>
+                <div slot="label">Titolo 3</div>
+                <news-roller id="news2">
+                    <news-roller-entry>
+                        <div slot="label">Inner 1</div>
+                        <img src="../../resources/pic7.jpg" alt="Pic 7" />
+                    </news-roller-entry>
+                    <news-roller-entry>
+                        <div slot="label">Inner 2</div>
+                        <img src="../../resources/pic3.jpg" alt="Pic 3" />
+                    </news-roller-entry>
+                </news-roller>
+            </news-roller-entry> -->
+            <!-- <news-roller-entry>
+                <div slot="label">Titolo 4</div>
+                <img src="../../resources/pic4.jpg" alt="Pic 4" />
+            </news-roller-entry> -->
+        </news-roller>
+    </body>
+</html>
