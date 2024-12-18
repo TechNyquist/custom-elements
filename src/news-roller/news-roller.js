@@ -39,57 +39,100 @@ class NewsRoller extends HTMLElement
      * The big screen for screen tag.
      * @type {HTMLElement}
      */
-    $screen;
+    $screens;
     /**
      * Current selected entry.
      * @type {NewsRollerEntry|null}
      */
     curEntry;
     /**
-     * Array of all detected entries.
+     * Array of all detected entry-pairs. For ease of use they are detected and
+     * arranged in this handy array.
      * @type {NewsRollerEntry[]}
      */
     entries;
+    /**
+     * The observer of any change in the organization of roller entries.
+     * @type {MutationObserver}
+     */
+    mutationObserver;
 
     constructor(...args)
     {
         super(...args);
         this.curEntry = null;
-        this.entries = null;
+        this.entries = [];
+
+        this.shadow = this.attachShadow({mode:'open'});
+        const tpl = this.#buildTemplate(this.self.LEFT);
+        this.shadow.innerHTML = tpl;
+
+        this.$labels = this.shadow.querySelector('#labels_container');
+        this.$screens = this.shadow.querySelector('#screens_container');
+
+        this.mutationObserver = new MutationObserver(this.onMutation.bind(this));
     }
 
     connectedCallback()
     {
-        this.shadow = this.attachShadow({mode:'open'});
-        const tpl = this.#buildTemplate(this.self.LEFT);
-        this.shadow.innerHTML = tpl;
-        
-        this.$labels = this.shadow.querySelector('#labels_container');
-        this.$screen = this.shadow.querySelector('#screen_container');
+        this.detectEntries();
+    }
 
-        this.installEntries();
-        this.addEventListener('slotchange', this.onSlotChanged.bind(this));
+    disconnectedCallback()
+    {
+        this.uninstallEntries();
     }
 
     /**
-     * First entries detection and installation.
+     * Detect all entries and arrange in internal "entries" pairs list.
      */
-    installEntries()
+    detectEntries()
     {
+        // let's find all the entries and diff them with existing one; no
+        // need to destroy what wasn't edited
+        this.uninstallEntries();
+
         /** @type {NewsRollerEntry[]} */
-        this.entries = this.#detectAllEntries();
-        
-        let first_entry = null;
-        for(const entry of this.entries)
+        let new_entries = [];
+
+        /** @type {HTMLSlotElement} */
+        const $labels_slot = this.shadow.querySelector('slot[name="label"]');
+        /** @type {HTMLSlotElement} */
+        const $screens_slot = this.shadow.querySelector('slot:not([name])');
+        /** @type {HTMLElement[]} */
+        const $labels = $labels_slot.assignedElements();
+        /** @type {HTMLElement[]} */
+        const $screens = $screens_slot.assignedElements();
+        const max_count = Math.min($labels.length, $screens.length);
+        for(let i = 0; i < max_count; ++i)
         {
+            const $label = $labels[i];
+            const $screen = $screens[i];
+            const entry = new NewsRollerEntry($label, $screen);
             entry.install(this);
-
-            if( first_entry == null )
-                first_entry = entry;
+            new_entries.push(entry);
         }
+        
+        this.entries = new_entries;
+        if( this.entries.length > 0 )
+            this.setCurEntry(this.entries[0].entryID);
 
-        if( first_entry )
-            this.setCurEntry(first_entry.entryID);
+        this.mutationObserver.observe(this, {
+            childList: true
+        });
+    }
+
+    /**
+     * Uninstall every entry detection. Useful before a new detection to
+     * avoid double events.
+     */
+    uninstallEntries()
+    {
+        this.mutationObserver.disconnect();
+
+        for(const entry of this.entries)
+            entry.uninstall();
+        this.entries = [];
     }
     
     static get observedAttributes() {
@@ -138,10 +181,8 @@ class NewsRoller extends HTMLElement
     findEntry(entry_id)
     {
         for(const entry of this.entries)
-        {
-            if( entry.entryID == entry_id )
+            if( entry.is(entry_id) )
                 return entry;
-        }
         return null;
     }
 
@@ -153,17 +194,25 @@ class NewsRoller extends HTMLElement
      */
     onLabelClick(entry, ev)
     {
+        console.log('clicked ' + entry.entryID);
         this.setCurEntry(entry.entryID);
     }
 
+    // /**
+    //  * Event fired when roller slots change.
+    //  * @param {Event} ev The event fired by slot-change.
+    //  */
+    // onSlotChanged(ev)
+    // {
+    //     this.detectEntries();
+    // }
+
     /**
-     * Event fired when roller slots change.
-     * @param {Event} ev The event fired by slot-change.
+     * Event fired when something changes inside the element.
      */
-    onSlotChanged(ev)
+    onMutation(ev)
     {
-        // TODO it's not so easy this one... gonna need to handle double events and so on
-        //this.installEntries();
+        this.detectEntries();
     }
 
     /**
@@ -188,17 +237,6 @@ class NewsRoller extends HTMLElement
             </div>
         `;
     }
-
-    /**
-     * Detect all the entries provided by the invoking page and return them.
-     * Be careful not to edit them at all, just reading.
-     * 
-     * @returns {NewsRollerEntry[]}
-     */
-    #detectAllEntries()
-    {
-        return this.querySelectorAll(':scope > news-roller-entry');
-    }
 }
 
 /**
@@ -206,69 +244,80 @@ class NewsRoller extends HTMLElement
  * 
  * @author Niki Romagnoli <niki.r@technyquist.com>
  */
-class NewsRollerEntry extends HTMLElement
+class NewsRollerEntry
 {
-    static TAG = 'news-roller-entry';
-    /**
-     * Shadow-root.
-     * @type {HTMLElement}
-     */
-    shadow;
-
     /**
      * Identification number inside the roller.
      * @type {int}
      */
     entryID;
     /**
-     * Array of tags slotted as title.
-     * @type {HTMLElement[]}
+     * The roller this entry belongs to.
+     * @type {NewsRoller}
      */
-    label_tags;
+    roller;
     /**
-     * Array of tags slotted as screen.
-     * @type {HTMLElement[]}
+     * The label element.
+     * @type {HTMLElement}
      */
-    screen_tags;
+    $label;
+    /**
+     * The main content element, associated to the entry's label.
+     * @type {HTMLElement}
+     */
+    $screen;
+     /**
+     * This object is sort of a cache of binded functions. They are useful to
+     * enable removing of event-listeners.
+     * @type {object}
+     */
+     #bindings;
 
-    constructor(...args)
+    /**
+     * It's ok to leave null these values but remember to set them before
+     * any use.
+     * 
+     * @param {HTMLElement} $label The label of the pair.
+     * @param {HTMLElement} $screen The screen of the pair.
+     */
+    constructor($label, $screen)
     {
-        super(...args);
         this.entryID = 0;
-
-        const tpl = `
-            <slot name="label"></slot>
-            <slot></slot>
-        `;
-        this.shadow = this.attachShadow({mode:"open"});
-        this.shadow.innerHTML = tpl;
+        this.roller = null;
+        this.$label = $label || null;
+        this.$screen = $screen || null;
+        this.#bindings = {};
     }
 
-    connectedCallback()
+    /**
+     * Test whether or not the given ID is of this entry.
+     * 
+     * @param {int} entry_id The ID to test.
+     * @returns {boolean}
+     */
+    is(entry_id)
     {
-        this.label_tags = this.shadow.querySelector('slot[name="label"]').assignedElements();
-        for(const $label of this.label_tags)
-            $label.classList.add('label');
-        this.screen_tags = this.shadow.querySelector('slot:not([name])').assignedElements();
-        for(const $screen of this.screen_tags)
-            $screen.classList.add('screen');
+        return this.entryID == entry_id;
     }
 
     /**
      * Install entry in given roller.
      * @param {NewsRoller} roller The roller this entry belongs to.
      */
+    f;
     install(roller)
     {
+        this.roller = roller;
         this.entryID = roller.self.masterID++;
-        this.setAttribute('entry-id', this.entryID);
-        for(const $label of this.label_tags)
-            $label.addEventListener('click', roller.onLabelClick.bind(roller, this));
+        this.#bindings.labelClick = this.roller.onLabelClick.bind(this.roller, this);
+        this.$label.addEventListener('click', this.#bindings.labelClick);
     }
 
-    uninstall(roller)
+    uninstall()
     {
-        // TODO important on unconnect to avoid double events and so on
+        this.$label.removeEventListener('click', this.#bindings.labelClick);
+        this.roller = null;
+        this.entryID = -1;
     }
 
     /**
@@ -276,10 +325,8 @@ class NewsRollerEntry extends HTMLElement
      */
     select()
     {
-        for(const $label of this.label_tags)
-            $label.classList.add('show');
-        for(const $screen of this.screen_tags)
-            $screen.classList.add('show');
+        this.$label.classList.add('show');
+        this.$screen.classList.add('show');
     }
 
     /**
@@ -287,10 +334,8 @@ class NewsRollerEntry extends HTMLElement
      */
     unselect()
     {
-        for(const $label of this.label_tags)
-            $label.classList.remove('show');
-        for(const $screen of this.screen_tags)
-            $screen.classList.remove('show');
+        this.$label.classList.remove('show');
+        this.$screen.classList.remove('show');
     }
 
     /**
@@ -302,5 +347,4 @@ class NewsRollerEntry extends HTMLElement
     };
 }
 
-customElements.define(NewsRollerEntry.TAG, NewsRollerEntry);
 customElements.define(NewsRoller.TAG, NewsRoller);

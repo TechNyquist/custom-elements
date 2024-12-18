@@ -82,7 +82,7 @@
 
                 $ext = pathinfo($lpath, PATHINFO_EXTENSION);
                 $filename = basename($lpath, ".{$ext}");
-                $dpath = $dist_path . "/{$filename}.min.{$ext}";
+                $dpath = $dist_path . "/{$filename}.{$ext}";
 
                 if( $ext == 'js' )
                 {
