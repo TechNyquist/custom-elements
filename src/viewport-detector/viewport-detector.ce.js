@@ -63,12 +63,14 @@ export default class ViewportDetector extends HTMLElement
 
         this.attachShadow({mode: "open"});
         this.shadowRoot.innerHTML = tpl;
+
+        // update on page load
+        window.addEventListener('load', () => this.enableMobileDetection());
     }
 
     connectedCallback()
     {
         this.detectWatchMedias();
-        this.enableMobileDetection();
     }
 
     disconnectedCallback()
@@ -126,7 +128,7 @@ export default class ViewportDetector extends HTMLElement
     {
         for(const watch of this.watches)
         {
-            if( this.offsetLeft == watch.left )
+            if( this.offsetLeft <= watch.left )
             {
                 this.watchCode = watch.code;
                 break;
