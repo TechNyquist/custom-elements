@@ -3,7 +3,23 @@ This CE ease detection of viewport change when styling responsive websites.
 When viewport changes, a JS callback is fired in order to take appropriate actions and 
 react to current viewport size.
 
-### Example
+## Media-queries autodetection
+Often the watched viewports match the list of available style versions, pointed by the "link" tags
+in the head. That is, you probably will have a style for various viewport sizes, and every viewport has
+its own media query for activation.
+
+The viewport-detector allows you to autodetect those tags and extract their media query, in order to avoid on repeating on each part whenever you decide to change a media query.
+
+To autodetect the "link" tags (that is the default behaviour) you change set the **autodetect** attribute on the _viewport-detector_ and set as its value the **selector** to use for detecting the link tags. There can be many different link tags, but you might want to detect only few of them. Give them a unique identifier (maybe a class) and use it as selector.
+If you omit the value and set the **autodetect** as a property of the tag, all the "link" tags will be selected.
+
+Then set a **data-code** attribute on every selected link with the code to notify on that viewport change. The result is something like the following. If you omit the "data-code" in "link" tags, it will automatically use the name of the imported css file (stripping path from the "href" attribute") without the extension.
+If no "data-code" was specified and no "href" is available, then a progressive index (from 1) is used.
+
+### "all" is ignored
+While in autodetection mode, all the media query with "all" are ignored because they would freeze all the detection process, and you woldn't need this custom-element at all then.
+
+## Example
 Define your own set of watches, according to your needs.
 ```HTML
     <viewport-detector>
@@ -50,16 +66,3 @@ And here an example of autodetection that selects all the "link" tags with media
         </body>
     </html>
 ```
-
-### Media-queries autodetection
-Often the watched viewports match the list of available style versions, pointed by the "link" tags
-in the head. That is, you probably will have a style for various viewport sizes, and every viewport has
-its own media query for activation.
-
-The viewport-detector allows you to autodetect those tags and extract their media query, in order to avoid on repeating on each part whenever you decide to change a media query.
-
-To autodetect the "link" tags (that is the default behaviour) you change set the **autodetect** attribute on the _viewport-detector_ and set as its value the **selector** to use for detecting the link tags. There can be many different link tags, but you might want to detect only few of them. Give them a unique identifier (maybe a class) and use it as selector.
-If you omit the value and set the **autodetect** as a property of the tag, all the "link" tags will be selected.
-
-Then set a **data-code** attribute on every selected link with the code to notify on that viewport change. The result is something like the following. If you omit the "data-code" in "link" tags, it will automatically use the name of the imported css file (stripping path from the "href" attribute") without the extension.
-If no "data-code" was specified and no "href" is available, then a progressive index (from 1) is used.

@@ -114,9 +114,14 @@ export default class ViewportDetector extends HTMLElement
                     code = index++;
                 }
 
+                // discard all media query of "all" as they would eat all the others
+                let media = $link.getAttribute('media');
+                if( media == 'all' )
+                    continue;
+
                 /** @type {ViewportWatch} */
                 const watch = document.createElement(ViewportWatch.TAG);
-                watch.setAttribute('media', $link.getAttribute('media'));
+                watch.setAttribute('media', media);
                 watch.setAttribute('code', code);
                 this.appendChild(watch);
 
