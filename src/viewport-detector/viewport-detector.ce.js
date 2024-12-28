@@ -28,6 +28,7 @@ export default class ViewportDetector extends HTMLElement
      */
     watchCode;
     /**
+     * // TODO convert to use built-in event-system
      * Array of callback functions to call as listeners.
      * @type {Function[]}
      */
@@ -86,7 +87,48 @@ export default class ViewportDetector extends HTMLElement
      */
     detectWatchMedias()
     {
-        this.watches = this.querySelectorAll(ViewportWatch.TAG);
+        if( this.hasAttribute('autodetect') )
+        {
+            // automatically detect the media-queries from the selected link tags
+            const selector = this.getAttribute('autodetect');
+            const $links = document.head.querySelectorAll('link'+selector+'[media]');
+            this.watches = [];
+            let index = 1;
+            for(const $link of $links)
+            {
+                let code;
+                if( 'code' in $link.dataset )
+                {
+                    // use the available data-code attribute
+                    code = $link.dataset.code;
+                }
+                else if( $link.hasAttribute('href') )
+                {
+                    // autodetect the pointed file name
+                    code = $link.getAttribute('href').replace(/^.*[\\/]/, '');    // cut the path part
+                    code = code.substring(0, code.lastIndexOf('.'));        // cut the extension
+                }
+                else
+                {
+                    // use a progressive index
+                    code = index++;
+                }
+
+                /** @type {ViewportWatch} */
+                const watch = document.createElement(ViewportWatch.TAG);
+                watch.setAttribute('media', $link.getAttribute('media'));
+                watch.setAttribute('code', code);
+                this.appendChild(watch);
+
+                this.watches.push(watch);
+            }
+
+            console.debug('detected viewport watches', this.watches);
+        }
+        else
+        {
+            this.watches = this.querySelectorAll(ViewportWatch.TAG);
+        }
 
         let style = '';
         let index = 1;
