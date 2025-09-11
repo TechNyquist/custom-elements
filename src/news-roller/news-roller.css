@@ -1,9 +1,34 @@
+/* @keyframes DefaultAppear
+{
+    from {
+        filter: opacity(0%);
+        visibility: visible;
+    }
+
+    to {
+        filter: opacity(100%);
+    }
+}
+
+@keyframes DefaultDisappear
+{
+    from {
+        filter: opacity(100%);
+    }
+
+    to {
+        filter: opacity(0%);
+        visibility: hidden;
+    }
+} */
+
 :host
 {
     display: grid;
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 
     --label-size: 1fr;
     --screen-size: 3fr;
@@ -85,39 +110,13 @@
     left: 0px;
     width: 100%;
     height: 100%;
-    animation: DefaultAppear 500ms;
-    animation-timing-function: ease-out;
-    animation-fill-mode: both;
+    transform: scale(0);
 }
-#screens_container ::slotted(:not(.show))
+#screens_container ::slotted(.show)
 {
-    animation-name: DefaultDisappear;
+    transform: scale(1);
 }
 #screens_container ::slotted(img)
 {
     object-fit: cover;
-}
-
-@keyframes DefaultAppear
-{
-    from {
-        filter: opacity(0%);
-        visibility: visible;
-    }
-
-    to {
-        filter: opacity(100%);
-    }
-}
-
-@keyframes DefaultDisappear
-{
-    from {
-        filter: opacity(100%);
-    }
-
-    to {
-        filter: opacity(0%);
-        visibility: hidden;
-    }
 }
