@@ -327,6 +327,9 @@ class NewsRollerEntry
     {
         this.$label.classList.add('show');
         this.$screen.classList.add('show');
+
+        // scroll screen to top
+        this.$screen.scrollTo(0, 0);
     }
 
     /**
