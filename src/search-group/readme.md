@@ -7,12 +7,46 @@ Place the tag and as children add one target tag for every input
 to watch.
 
 ```HTML
-<search-group on-search="window.searchFunction" remote="/funcs/search.php">
-    <search-group-target selector=".name-input" />
-    <search-group-target selector=".age-input" />
+<input type="text" name="fullname"></input>
+<input type="number" name="age"></input>
+
+<search-group>
+    <search-group-target selector="[fullname]" />
+    <search-group-target selector="[age]" />
 </search-group>
 ```
+Then attach to `"search"` event:
 
+```JS
+const sg = document.querySelector('search-group');
+sg.addEventListener('search', function(ev) {
+  // the values of the watched inputs to perform the search offline
+  console.log(ev.criterias);
+});
+```
+Instead if you need to make remote search it is slightly different, just add the 
+`remote` attribute with the URL to call:
+```HTML
+<input type="text" name="fullname"></input>
+<input type="number" name="age"></input>
+
+<search-group remote="/ajax/search.php">
+    <search-group-target selector="[fullname]" />
+    <search-group-target selector="[age]" />
+</search-group>
+```
+Then always listen for `"search"` event but this time you'll be called when the server
+responds with the result of the search in JSON. This time "criterias" will be undefined
+and `results` will be populated instead:
+```JS
+const sg = document.querySelector('search-group');
+sg.addEventListener('search', function(ev) {
+  // output the result of the search
+  console.log(ev.results);
+});
+```
+
+## The HTML tags
 `<search-group>` is the tag container tag and every occurence defines
 a new group of fields to watch.
 
