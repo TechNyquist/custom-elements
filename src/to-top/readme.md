@@ -26,6 +26,7 @@ to-top.show
 ### Available attributes
 These options are available as attributes to customize element's behavior:
 
+```HTML
 <table>
     <tr>
         <th>Name</th>
@@ -55,3 +56,4 @@ These options are available as attributes to customize element's behavior:
             to the `window.scrollTo` function.</td>
     </tr>
 </table>
+```
