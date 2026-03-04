@@ -98,7 +98,7 @@ class NewsRoller extends HTMLElement
         /** @type {HTMLSlotElement} */
         const $labels_slot = this.shadow.querySelector('slot[name="label"]');
         /** @type {HTMLSlotElement} */
-        const $screens_slot = this.shadow.querySelector('slot:not([name])');
+        const $screens_slot = this.shadow.querySelector('slot[name="screen"]');
         /** @type {HTMLElement[]} */
         const $labels = $labels_slot.assignedElements();
         /** @type {HTMLElement[]} */
@@ -233,7 +233,7 @@ class NewsRoller extends HTMLElement
                 <slot name="label"></slot>
             </div>
             <div id="screens_container">
-                <slot></slot>
+                <slot name="screen"></slot>
             </div>
         `;
     }
@@ -327,6 +327,9 @@ class NewsRollerEntry
     {
         this.$label.classList.add('show');
         this.$screen.classList.add('show');
+
+        // scroll screen to top
+        this.$screen.scrollTo(0, 0);
     }
 
     /**
